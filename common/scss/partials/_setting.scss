@@ -1,0 +1,168 @@
+@charset "UTF-8";
+// SETTING　各プロジェクト毎の仕様に対応する変数・MIXIN・関数を記述
+
+// コーポレートカラー
+// カラム幅
+// 基本テキストスタイル etc
+// CSSの記述時に毎回指定をし直すロスを無くすため、使えるものは極力使用する
+
+
+
+// Vairable 対応ブラウザ系変数 ///////////////////////////////////////
+
+		$ie6: true; // IE6
+		$ie7: true; // IE7
+		$ie8: true; // IE8
+		$ie9: true; // IE9
+		$mozilla: true; // firefox
+		$webkit : true; // Chrome, Safari
+
+
+
+
+// Vairable レイアウト系変数 ///////////////////////////////////////
+
+		//サイトの幅
+		$width:1080px;
+
+		//メイン・コンテンツの幅
+		$main-width:780px;
+
+		//サブ・コンテンツの幅
+		$sub-width:300px;
+
+
+
+
+// Vairable スタイル系変数 ///////////////////////////////////////
+
+		//基本のゴシック
+		$fontGothic:"游ゴシック",YuGothic,"ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+
+		//基本の明朝
+		$fontMincyou:"游明朝",YuMincho,"ヒラギノ明朝 Pro W3", "Hiragino Mincho Pro","ＭＳ Ｐ明朝", "MS PMincho", serif;
+
+
+
+
+// Vairable _helper用系変数 ///////////////////////////////////////
+
+		// Colors
+		$color-a: #157038; // Green
+		$color-b: #b3cf4d; // Yellowish Green
+		$color-c: #808080; // Alminium Gray
+		$color-d: #333; // Off Black
+		$color-e: #444;
+		$color-f: #555;
+		$color-g: #666;
+		$color-h: #777;
+		$color-i: #888;
+		$color-j: #999;
+		
+		// Spaces
+		$space-base: 10px;
+		$space-2: $space-base * 2;
+		$space-3: $space-base * 3;
+		$space-4: $space-base * 5;
+		
+		// Font Size
+		$font-size-base: 14px;
+		$font-size-1: $font-size-base - 6px;
+		$font-size-2: $font-size-base - 4px;
+		$font-size-3: $font-size-base - 2px;
+		$font-size-4: $font-size-base + 2px;
+		$font-size-5: $font-size-base + 4px;
+		$font-size-6: $font-size-base + 6px;
+		
+		// Heights
+		$height-tap-1: 26px;
+		$height-tap-2: 32px;
+		$height-tap-3: 42px;
+		
+		// Border Radius
+		$radius-base: 4px;
+		$radius-2: $radius-base * 2;
+		$radius-3: $radius-base * 4;
+
+
+
+
+// FUNCTION カラースキームモジュール ///////////////////////////////////////
+
+		//カラースキーム適用
+		//引数には用途・目的など意味が伝わる言葉を使う
+
+		@function scheme($type){
+
+			@if $type == key{	//アクセントとなるキーカラー
+				@return #0797de;
+
+			}@elseif $type == text{	//テキストカラー
+				@return #555;
+
+			}@elseif $type == link{	//リンク色　テキストカラーのリンクのホバー色
+				@return #008cda;
+
+			}@elseif $type == linkHover{	//リンク色　テキストカラーのリンクのホバー色
+				@return #09c;
+
+			}@elseif $type == linkActive{	//リンク色　テキストカラーのリンクのアクティブ色
+				@return #09c;
+
+			}@elseif $type == bg{	//HTML背景色
+				@return #fff;
+
+			}@elseif $type == mainBG{	//メイン部分背景色
+				@return #fdfdfd;
+
+			}
+		}
+
+
+
+
+// MIXIN 画面リサイズ用MIXIN ///////////////////////////////////////
+		@mixin minWScreen {
+			@media only screen and (max-width:1016px){
+				 @content;
+			}
+		}
+		@mixin minHScreen {
+			@media only screen and (max-height:660px){
+				 @content;
+			}
+		}
+
+
+
+// MIXIN テキスト系MIXIN ///////////////////////////////////////
+
+		//基本のテキストスタイル 引数(font-size , line-height , color , letter-spacing)
+		//ベースの変更は引数の値で指定しておく
+		//基本使用する時は引数を使わないイメージで 例：@include text-base;
+		@mixin text-base($size:100%,$lh:1.8,$tc:scheme(text)){ font-size:$size; line-height:$lh; color:$tc;
+									
+			//white space
+			& + p {margin-top:1.2em;}			
+			
+		};
+
+ 		//リンクテキスト
+		@mixin text-link		{ text-decoration:underline; color:scheme(link);}
+
+		//ロールオーバーテキスト
+		@mixin text-hover		{ text-decoration:underline; color:lighten(scheme(link),10%);}
+
+		//クリックテキスト
+		@mixin text-active		{ text-decoration:underline; color:scheme(linkActive);}
+
+		//通常のリンクテキストの指定
+		@mixin link-set		{
+			@include text-link;
+			&:hover	{ @include text-hover;}
+			&:active{ @include text-active;}
+		}
+
+
+
+

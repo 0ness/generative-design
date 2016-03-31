@@ -1,0 +1,65 @@
+@charset "UTF-8";
+//
+//記述はレイアウトの構造優先
+//-----------------------------
+//1.width,height
+//2.float,clear
+//3.position,top,bottom,left,right
+//4.overflow,display
+//5.margin,padding
+//6.text-align
+//7.font,line-height
+//8.background,border
+//9.etc....
+//-----------------------------
+//
+//フォントサイズ：%表示（20px以降はpxで可）
+
+
+
+@import "partials/_setting";
+@import "partials/_mixin";
+@import "partials/_function";
+@import "partials/_reset";
+
+
+
+
+
+/*============================================================
+LAYOUT用スタイル　
+============================================================*/
+html	{ height:100%;}
+body	{ height:100%; text-align:left;
+
+	& > #wrapper { height:auto;}
+	
+
+	@include select-color(#fff,scheme(key));
+}
+#wrapper { min-height:100%; height:auto !important; background:black; height:100%; position:relative; overflow: hidden;
+	@include iphone	{ -webkit-text-size-adjust: none;}
+}
+
+
+/*HEADER
+--------------------------------------------------------------------*/
+#header	{}
+
+
+
+
+/*CONTENTS
+--------------------------------------------------------------------*/
+#contents	{ @include bottom-left(40,60,100);
+	.headMain { color: white; font-size: 20px; letter-spacing: 2px; border-bottom: 1px solid white;}
+}
+#main	{}
+#myCanvas { position:absolute; top:0; left:0; background:black;}
+
+
+
+
+
+
+

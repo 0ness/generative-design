@@ -1,0 +1,52 @@
+@charset "UTF-8";
+
+//CSS Priority
+//
+//記述はレイアウトの構造優先
+//-----------------------------
+//1.width,height
+//2.float,clear
+//3.position,top,bottom,left,right
+//4.overflow,display
+//5.margin,padding
+//6.text-align
+//7.font,line-height
+//8.background,border
+//9.etc....
+//-----------------------------
+//
+//フォントサイズ：%表示（20px以降はpxで可）
+
+
+@import "partials/_setting";
+@import "partials/_mixin";
+@import "partials/_function";
+@import "partials/_helper";
+
+
+
+
+/*resize.html
+--------------------------------------------------------------------*/
+#resize{
+	#myCanvas { background:#111;}
+}
+
+
+/*IKChain_01.html
+--------------------------------------------------------------------*/
+#IKChain_01{
+	#canvas	{ display:block; background:#000;}
+}
+
+
+/*circle_01.html
+--------------------------------------------------------------------*/
+#circle_01{
+	#myCanvas{ display:block; background:#000;}
+}
+
+
+
+
+

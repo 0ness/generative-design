@@ -1,0 +1,60 @@
+@charset "UTF-8";
+//　FUNCTION　関数用SCSS
+//　共有用モジュールのみ記述
+//　どのサイトでも使える関数のみ用意
+//　色
+//　レイアウト
+//　IE対応 etc
+
+
+
+
+// FUNCTION レイアウト系モジュール ///////////////////////////////////////
+
+		//全体のwidthからの割り算
+		//引数（$division：全体から割る数 , $type：分割タイプ切り替え , $white：余白の値）
+		//分割タイプ：1 = px指定
+		@function devide-width($division:2,$type:1,$white:0){
+			$answer:0;
+			@if $type == 1{
+				$white_len:$division - 1;
+				$width_size:$width - $white_len * $white;
+				$answer:$width_size / $division;
+			}@elseif $type == 2{
+				//$white_len:$division - 1;
+				//$width_size:$width - $white_len * $white;
+				$answer:percentage((100 / $division) / 100);
+			}
+			@return $answer;
+		}
+	
+
+
+
+// FUNCTION プロパティ値モジュール ///////////////////////////////////////
+				
+		//フォントサイズをpxから％へ指定
+		$fontSizeList:62%,70%,77%,85%,93%,100%,108%,116%,123.1%,131%,138.5%,146.5%,153.9%,161.6%,170%,177%,185%,193%,200%,208%,216%,224%,231%,239%,247%,254%,262%,270%,277%,285%,293%,300%,308%;
+		@function fs($size:13) {
+			@if $size < 8{
+				$size:8;
+			}
+			@if $size > 40{
+				$size:40;
+			}
+			@return nth($fontSizeList,$size - 7);
+		}
+		
+		//色を白に近づける
+		@function whiteMix($color:#000,$per:25){
+			$per_02:100-$per;
+			$color_02:mix($color,#fff,$per_02);
+			@return $color_02;
+		}
+		
+		//色を黒に近づける
+		@function blackMix($color:#fff,$per:25){
+			$per_02:100-$per;
+			$color_02:mix($color,#000,$per_02);
+			@return $color_02;
+		}

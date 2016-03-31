@@ -1,0 +1,436 @@
+@charset "UTF-8";
+
+//　MIXIN　モジュール用SCSS
+//　共有用モジュールのみ記述　基本プロジェクトに影響するものは記述しない
+
+//　メディアクエリ
+//　CSS3
+//　レイアウト
+//　IE対応 etc
+
+
+
+// MIXIN メディアクエリ系モジュール ///////////////////////////////////////
+
+		//iphone用メディアクエリ
+		@mixin iphone {
+			@media screen and (min-width: 0px) and (max-device-width: 640px){
+				@content;
+			}
+		}
+		
+		//ipad用メディアクエリ
+		@mixin ipad {
+			@media only screen and
+			(min-device-width : 768px) and
+			(max-device-width : 1024px){
+				 @content;
+			}
+		}
+
+		//Androidの高精細画面も含めた指定
+		@mixin mobile {
+			@media only screen and (-webkit-min-device-pixel-ratio: 1.5) {	@content; }
+		}
+	
+		//IE6用対応
+		@mixin ie6	{
+			html.ie6 &{ @content; }
+		}
+		
+		//IE7用対応
+		@mixin ie7	{
+			html.ie7 &{ @content; }
+		}
+
+		//IE8用対応
+		@mixin ie8	{
+			html.ie8 &{ @content; }
+		}
+
+		//IE8用対応
+		@mixin ie9	{
+			html.ie9 &{ @content; }
+		}
+
+		//Firefox用対応
+		@mixin firefox	{
+			html.firefox &{ @content; }
+		}
+
+		//webkit用対応
+		@mixin webkit	{
+			html.webkit &{ @content; }
+		}
+
+		//IE7、8用対応
+		@mixin ie78	{
+			html.ie7 &{ @content; }
+			html.ie8 &{ @content; }
+		}
+
+		//IE6、7、8用対応
+		@mixin ie678	{
+			html.ie6 &{ @content; }
+			html.ie7 &{ @content; }
+			html.ie8 &{ @content; }
+		}
+
+		//IE6、7、8、9用対応
+		@mixin ie6789	{
+			html.ie6 &{ @content; }
+			html.ie7 &{ @content; }
+			html.ie8 &{ @content; }
+			html.ie9 &{ @content; }
+		}
+
+		//IE7、8用対応
+		@mixin ie78	{
+			html.ie7 &{ @content; }
+			html.ie8 &{ @content; }
+		}
+
+		//IE8、9用対応
+		@mixin ie89	{
+			html.ie8 &{ @content; }
+			html.ie9 &{ @content; }
+		}
+
+		//IE7、8、9用対応
+		@mixin ie789	{
+			html.ie7 &{ @content; }
+			html.ie8 &{ @content; }
+			html.ie9 &{ @content; }
+		}
+
+		//IE6用　ハック対応
+		@mixin hack_ie6	{
+			* html &{ @content;}
+		}	
+
+		//IE7用　ハック対応
+		@mixin hack_ie7	{
+			*+html &{ @content;}
+		}	
+
+		//IE6、7用　ハック対応
+		@mixin hack_ie67	{
+			* html &{ @content;}
+			*+html &{ @content;}
+		}
+
+
+
+// MIXIN CSS3系モジュール ///////////////////////////////////////
+
+		//透明度（アルファ値をパーセンテージで入力）
+		@mixin opacity($n:75)	{ opacity:$n/100; filter: alpha(opacity=$n); -ms-filter:"alpha(opacity="+$n+")"; zoom:1;}
+		
+		//トランジション（イージング,秒数,プロパティ,ディレイ）
+		@mixin transition($e:ease-out,$n:0.2s,$p:all,$delay:0s){
+			@if $e == none {
+				-webkit-transition:none; -moz-transition:none; transition:none;
+			}@else if $p == box-shadow{
+				-webkit-transition:$e $n -webkit-box-shadow; -moz-transition:$e $n box-shadow; transition:$e $n box-shadow;
+			}@else if $p == transform{
+				-webkit-transition:$e $n -webkit-transform; -moz-transition:$e $n -moz-transform; transition:$e $n transform;
+			}@else{
+				-webkit-transition:$e $n $p; -moz-transition:$e $n $p; transition:$e $n $p;
+			}
+			-moz-transition-delay:$delay; -webkit-transition-delay:$delay; transition-delay:$delay;
+		}
+
+		//トランジションdelay（ディレイ）
+		@mixin delay($delay:0s){ -moz-transition-delay:$delay; -webkit-transition-delay:$delay; transition-delay:$delay;}
+		
+		//カスタムイージング：CSS3アニメーションのイージングを細かく指定したい時に使用するhttp://cubic-bezier.comを利用すると便利
+		@mixin easing($a,$b,$c,$d,$pro:all,$s:1000ms){
+			@if $pro == transform{
+				-webkit-transition: -webkit-transform $s cubic-bezier($a,$b,$c,$d);
+				-moz-transition: -moz-transform $s cubic-bezier($a,$b,$c,$d);
+				-ms-transition: -ms-transform $s cubic-bezier($a,$b,$c,$d);
+				transition: transform $s cubic-bezier($a,$b,$c,$d);
+			}@else{
+				-webkit-transition: $pro $s cubic-bezier($a,$b,$c,$d);
+				-moz-transition: $pro $s cubic-bezier($a,$b,$c,$d);
+				-ms-transition: $pro $s cubic-bezier($a,$b,$c,$d);
+				transition: $pro $s cubic-bezier($a,$b,$c,$d);
+			}
+			-webkit-transition-timing-function: cubic-bezier($a,$b,$c,$d);
+			-moz-transition-timing-function: cubic-bezier($a,$b,$c,$d);
+			-ms-transition-timing-function: cubic-bezier($a,$b,$c,$d);
+			transition-timing-function: cubic-bezier($a,$b,$c,$d);
+		}
+
+		//アニメーションanimation（プロパティセット）
+		@mixin animation($prop){ -moz-animation:$prop; -webkit-animation:$prop; -ms-animation:$prop; animation:$prop;}
+		
+		//キーフレームkeyframes(関数名)
+		@mixin keyframes($name){
+			@-moz-keyframes $name{ @content; };
+			@-ms-keyframes $name{ @content; };
+			@-webkit-keyframes $name{ @content; };
+			@keyframes $name{ @content; };
+		}
+
+		//トランスフォーム　一式（プロパティセット）
+		@mixin transform($set...)	{ -ms-transform:$set; -moz-transform:$set; -webkit-transform:$set; transform:$set;}
+			
+		//トランスフォーム　回転（角度を単位degを付けて入力）
+		@mixin rotate($r)	{ -ms-transform: rotateZ($r); -moz-transform: rotateZ($r); -webkit-transform: rotateZ($r); transform: rotateZ($r);}
+
+		//トランスレート　座標（x,y）
+		@mixin translate($x:0,$y:0)	{ -ms-transform: translate($x+px,$y+px); -moz-transform: translate($x+px,$y+px); -webkit-transform: translate($x+px,$y+px); transform: translate($x+px,$y+px);}
+
+		//トランスレート　座標（x,y,z）
+		@mixin translate3d($x:0,$y:0,$z:0)	{ -ms-transform: translate3d($x+px,$y+px,$z+px); -moz-transform: translate3d($x+px,$y+px,$z+px); -webkit-transform: translate3d($x+px,$y+px,$z+px); transform: translate3d($x+px,$y+px,$z+px);}
+
+		//角丸（プロパティセット）
+		@mixin radius($r)	{ -webkit-border-radius:$r; -moz-border-radius:$r; -ms-border-radius:$r; border-radius:$r;}
+		
+		//ボックスシャドウ（影のプロパティは幾つでもセット可能）
+		@mixin box-shadow($shadows...){ -moz-box-shadow: $shadows; -webkit-box-shadow: $shadows; box-shadow: $shadows;}
+		
+		//ボックスモデル（プロパティ）	基本はボーダーボックス状態にするために使う
+		@mixin sizing($r:border-box) { -moz-box-sizing:$r; -webkit-box-sizing:$r; box-sizing:$r;}
+
+		//選択範囲テキスト（文字色、背景色）
+		@mixin select-color($color,$bg){
+			p::selection,h1::selection,h2::selection,h3::selection,h4::selection,a::selection,img::selection,em::selection,strong::selection,dd::selection,dt::selection,u::selection,dfn::selection,li::selection{ color:$color; background:$bg;}
+			*::-moz-selection { color:$color; background:$bg; }
+		}
+		
+		//ボックスで円を描く（サイズ、背景色）
+		@mixin circle($size:100px,$bgcolor:#333) {
+			
+			//幅の指定
+			@if unitless($size) == true{
+				width: $size+px; height: $size+px;
+			}@else if unit($size) == "px"{
+				width: $size; height: $size;
+			}@else if unit($size) == "%"{
+				width: $size; height: $size;
+			}
+			 
+			 @include radius(100%); background:$bgcolor;
+		}
+
+		//ボックスで楕円を描く（幅、高さ、背景色,ぼかし）
+		@mixin ellipse($w:100px,$h:100px,$bgcolor:#333,$blur:false) {
+
+			$w_02:$w;
+			$h_02:$h;
+			
+			//幅の指定
+			@if unitless($w) == true{
+				$w_02:$w+px;
+			}
+			
+			//高さの指定
+			@if unitless($h) == true{
+				$h_02:$h+px;
+			}
+			
+			//ぼかし
+			@if $blur == true{
+				@include box-shadow(0 20px 20px $bgcolor,0 -20px 20px $bgcolor,-20px 0 20px $bgcolor,20px 0 20px $bgcolor);
+				border:1px solid $bgcolor;
+			}
+			
+			width:$w_02;
+			height:$h_02;
+			 @include radius(100%); background:$bgcolor;
+		}
+
+
+
+// MIXIN CSS3系スマートフォン用モジュール ///////////////////////////////////////
+
+		//ボックス内テキスト中央揃え
+		//スマートフォンのボタンなどに使用
+		@mixin center	{ display:table-cell; vertical-align:middle; text-align:center;}
+		
+		//ボックス内テキスト上下揃え
+		//スマートフォンのボタンなどに使用
+		@mixin v-center	{ display:table-cell; vertical-align:middle;}
+		
+			
+		
+		
+// MIXIN CSS2系スタイルモジュール ///////////////////////////////////////
+
+		//幅と高さ指定（width,height,overflow）
+		//幅と高さの引数はpx,%で入力
+		//第三引数にoverflowを指定できる
+		//pxは省略可能
+		@mixin wh($w:auto,$h:auto,$overflow:visible){
+			$w_02:$w;
+			$h_02:$h;
+			
+			//幅の指定
+			@if $w == auto{
+				$w_02:auto;
+			}@else if unitless($w) == true{
+				$w_02:$w+px;
+			}
+			
+			//高さの指定
+			@if $h == auto{
+				$h_02:auto;
+			}@else if unitless($h) == true{
+				$h_02:$h+px;
+			}
+			
+			width:$w_02;
+			height:$h_02;
+			overflow:$overflow;
+			display:block;
+		}
+
+		//絶対配置　上左（top,left,z-index,absolute or fixed）
+		@mixin top-left($t:0,$l:0,$z:auto,$pos:absolute)	{
+
+			//topの指定
+			@if unitless($t) == true{
+				top:$t+px;
+			}@else if unit($t) == "px"{
+				top:$t;
+			}@else if unit($t) == "%"{
+				top:$t;
+			}
+
+			//leftの指定
+			@if unitless($l) == true{
+				left:$l+px;
+			}@else if unit($l) == "px"{
+				left:$l;
+			}@else if unit($l) == "%"{
+				left:$l;
+			}
+			
+			position:$pos;
+			z-index:$z;
+		}
+
+		//絶対配置　下左（top,left,z-index,absolute or fixed）
+		@mixin bottom-left($t:0,$l:0,$z:auto,$pos:absolute){
+			
+			//bottomの指定
+			@if unitless($t) == true{
+				bottom:$t+px;
+			}@else if unit($t) == "px"{
+				bottom:$t;
+			}@else if unit($t) == "%"{
+				bottom:$t;
+			}
+
+			//leftの指定
+			@if unitless($l) == true{
+				left:$l+px;
+			}@else if unit($l) == "px"{
+				left:$l;
+			}@else if unit($l) == "%"{
+				left:$l;
+			}
+			
+			position:$pos;
+			z-index:$z;		
+		}
+		
+		//絶対配置　上右（top,left,z-index,absolute or fixed）
+		@mixin top-right($t:0,$l:0,$z:auto,$pos:absolute)	{
+			
+			//topの指定
+			@if unitless($t) == true{
+				top:$t+px;
+			}@else if unit($t) == "px"{
+				top:$t;
+			}@else if unit($t) == "%"{
+				top:$t;
+			}
+
+			//rightの指定
+			@if unitless($l) == true{
+				right:$l+px;
+			}@else if unit($l) == "px"{
+				right:$l;
+			}@else if unit($l) == "%"{
+				right:$l;
+			}
+			
+			position:$pos;
+			z-index:$z;		
+		}
+				
+		//絶対配置　下右（top,left,z-index,absolute or fixed）
+		@mixin bottom-right($t:0,$l:0,$z:auto,$pos:absolute)	{
+			
+			//bottomの指定
+			@if unitless($t) == true{
+				bottom:$t+px;
+			}@else if unit($t) == "px"{
+				bottom:$t;
+			}@else if unit($t) == "%"{
+				bottom:$t;
+			}
+
+			//rightの指定
+			@if unitless($l) == true{
+				right:$l+px;
+			}@else if unit($l) == "px"{
+				right:$l;
+			}@else if unit($l) == "%"{
+				right:$l;
+			}
+			
+			position:$pos;
+			z-index:$z;		
+		}
+		
+		//絶対配置のマスク配置（マスクの色,z-index）
+		@mixin mask($color:none,$z:auto)	{ width:100%; height:100%; display:block; position:absolute; top:0; left:0; z-index:$z; background:$color;}		
+		
+		//クリアフィックス
+		@mixin clearfix {
+			zoom: 1;
+			&:before,
+			&:after {
+				display: block;
+				height: 0;
+				visibility: hidden;
+				content: "\0020";
+			}
+			&:after { clear: both;}
+		}
+		
+		//両端揃え
+		@mixin text-justify	{
+			text-align:justify;
+			text-justify:inter-ideograph; 
+		}
+
+
+
+// MIXIN IE対応レイアウトモジュール ///////////////////////////////////////
+
+		//IE用　インラインブロック適用
+		@mixin inline-block {
+			display: inline-block;
+			
+			//IE対応
+			@if $ie6 or $ie7 {
+				*display: inline;
+				*zoom: 1;
+			}
+		}
+		
+		//liタグの画像を使ったナビのバグを修正する
+		@mixin listBugFix	{
+			line-height:normal; vertical-align:bottom; font-size:1%;
+			a	{ line-height:normal; vertical-align:bottom; font-size:1%;}
+			img	{ line-height:normal; vertical-align:bottom; font-size:1%;}
+		}
+		
+		
+		
+		

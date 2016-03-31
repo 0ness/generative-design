@@ -1,0 +1,25 @@
+@charset "UTF-8";
+
+
+/*============================================================
+印刷用スタイル　
+============================================================*/
+*	{ margin:0; padding:0;}
+img	{ display:block; border:none;}
+#wrapper,
+#layerBG,
+#floatBox,
+#lightBox	{ display:none !important;}
+#print		{ display:block !important;
+
+	img	{ width:100%; height:auto;}
+
+	img#printNormal	{ display:block !important;}
+	img#printMedical	{ display:none !important;}
+	
+	//メディカルオノマトペ表示時
+	&.medical	{
+		img#printMedical	{ display:block !important;}
+		img#printNormal	{ display:none !important;}
+	}
+}
