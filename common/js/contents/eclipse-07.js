@@ -20,8 +20,8 @@
 	--------------------------------------------------------------------*/
 	var ShapeGenerator = function(){
 //		this.nowVertex 	= 8;
-		this.nowVertex 	= (Math.random()*this.vertexLimit | 0) + 4;
-		this.nowRadius 	= Math.random()*50 | 0;
+		this.nowVertex 	= (this.doRndVertex)? Math.round(Math.random()*this.vertexLimit | 0) + 2 : this.vertexLimit;
+		this.nowRadius 	= Math.random()*10 | 0;
 		this.glowRadius = (Math.random()*this.glowRLimit * 10 | 0) / 10;
 		this.lineWidth  = (Math.random()*this.lineWLimit * 100 | 0) / 100;
 		this.lineAlpha	= (Math.random()*this.alphaMin * 100 | 0) / 100;
@@ -31,33 +31,33 @@
 			x:window.innerWidth >> 1,
 			y:window.innerHeight >> 1
 		};
-		this.init();
+		this.draw();
 	},
 		Member = ShapeGenerator.prototype;
 	
-	Member.vertexLimit	= 5;
-	Member.glowRLimit	= 1;
-	Member.lineWLimit	= 1;
-	Member.repeatLimit	= 100;
-	Member.repeatMin	= 5;
-	Member.alphaMin		= 0.5;
-	Member.changeLimit 	= 30;
-	Member.noiseLimit	= 4;
-	Member.doPointNoise	= false;
-	Member.doAngleNoise	= false;
-	Member.doGlowNoise	= false;
-	Member.doLineDraw	= true;
-	Member.doArcDraw	= false;
+	Member.vertexLimit		= 8;
+	Member.glowRLimit		= 1;
+	Member.lineWLimit		= 1;
+	Member.repeatLimit		= 100;
+	Member.repeatMin		= 5;
+	Member.alphaMin			= 0.5;
+	Member.changeLimit 		= 30;
+	Member.noiseLimit		= 4;
+	Member.centerNoiseLimit	= 100;
+	Member.doRndVertex		= true;
+	Member.doCenterNoise	= false;
+	Member.doPointNoise		= false;
+	Member.doAngleNoise		= false;
+	Member.doGlowNoise		= false;
+	Member.doLineDraw		= true;
+	Member.doArcDraw		= false;
 	
 	
 	
 	
 	/*method
 	--------------------------------------------------------------------*/
-	Member.init = function(){
-		this.resize();
-		this.draw();
-	};
+	
 	
 	/**
 	 * 描画
@@ -66,13 +66,15 @@
 		var _len = this.changeLimit,
 			_c	= ctx;
 		
+		this.resize();
+		
 		_c.globalAlpha  = 1;
 		_c.fillStyle 	= this.bgColor;
 		_c.fillRect(0,0,winWidth,winHeihgt);
 		for(var i=0; i<_len; i++) this.drawShapeRepeat();
 		
 		this.nowRadius 	= Math.random()*50 | 0;
-		this.nowVertex 	= (Math.random()*this.vertexLimit | 0) + 4;
+		this.nowVertex 	= (this.doRndVertex)?((Math.random()*this.vertexLimit | 0) + 4) : this.vertexLimit|0;
 	};
 	
 	/**
@@ -111,14 +113,21 @@
 	 */
 	Member.drawShapeRepeat = function(){
 		var _len 	= (Math.random()*this.repeatLimit) | 0 + this.repeatMin,
-			_c		= ctx;
+			_c		= ctx,
+			_cp		= this.centerPoint;
+		
+		if(this.doCenterNoise){
+			var _noise = this.centerNoiseLimit;
+			_cp.x += (Math.random()*_noise - _noise/2);
+			_cp.y += (Math.random()*_noise - _noise/2);
+		}
 		
 		_c.strokeStyle  = this.strokeColor;
 		_c.globalAlpha  = this.lineAlpha;
 		
 		for(var i=0; i<_len; i++) this.drawShape();
-		this.nowVertex 	+= (Math.random()*3 | 0) - 1;
-		this.nowVertex 	= (this.nowVertex <= 3)? 3:this.nowVertex;
+		this.nowVertex 	+= Math.random()*4 - 2;
+		this.nowVertex 	= (this.doRndVertex)? ((this.nowVertex <= 3)? 3:this.nowVertex)|0 : this.vertexLimit|0;
 		this.nowRadius 	+= (Math.random()*50 | 0 - 25)
 		this.glowRadius = (Math.random()*this.glowRLimit * 10 | 0) / 10;
 		this.lineWidth  = (Math.random()*this.lineWLimit * 10 | 0) / 10;
@@ -172,16 +181,22 @@ var INDEX = new ShapeGenerator();
 	 * dat.GUI用オブジェクト
 	 */
 var DAT = new dat.GUI();
+DAT.addColor(INDEX, 'strokeColor').onChange(function(){INDEX.draw();});
+DAT.addColor(INDEX, 'bgColor').onChange(function(){INDEX.draw();});
 DAT.add(INDEX, 'changeLimit',1,100).onChange(function(){INDEX.draw();});
 DAT.add(INDEX, 'repeatLimit',1,200).onChange(function(){INDEX.draw();});
 DAT.add(INDEX, 'repeatMin',1,100).onChange(function(){INDEX.draw();});
 DAT.add(INDEX, 'glowRLimit',0.1,5).onChange(function(){INDEX.draw();});
 DAT.add(INDEX, 'lineWLimit',0.1,3).onChange(function(){INDEX.draw();});
-DAT.add(INDEX, 'alphaMin',0.1,1).onChange(function(){INDEX.draw();});
+DAT.add(INDEX, 'alphaMin',0.01,1).onChange(function(){INDEX.draw();});
+DAT.add(INDEX, 'doRndVertex').onChange(function(){INDEX.draw();});
+DAT.add(INDEX, 'vertexLimit',3,20).onChange(function(){INDEX.draw();});
+DAT.add(INDEX, 'doCenterNoise').onChange(function(){INDEX.draw();});
+DAT.add(INDEX, 'centerNoiseLimit',0.1,300).onChange(function(){INDEX.draw();});
 DAT.add(INDEX, 'doPointNoise').onChange(function(){INDEX.draw();});
 DAT.add(INDEX, 'doGlowNoise').onChange(function(){INDEX.draw();});
 DAT.add(INDEX, 'doAngleNoise').onChange(function(){INDEX.draw();});
-DAT.add(INDEX, 'noiseLimit',0.1,20).onChange(function(){INDEX.draw();});
+DAT.add(INDEX, 'noiseLimit',0.1,50).onChange(function(){INDEX.draw();});
 DAT.add(INDEX, 'doLineDraw').onChange(function(){INDEX.draw();});
 DAT.add(INDEX, 'doArcDraw').onChange(function(){INDEX.draw();});
 DAT.add(INDEX,"draw");
