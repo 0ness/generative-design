@@ -13,8 +13,8 @@
 	 */	
 	var PLANET = function(){},
 		METHOD = PLANET.prototype;
-
-
+	
+	
 
 	/**
 	* 色生成：シード値を与えてRGB値を返す
@@ -33,7 +33,6 @@
 		return rgb;
 	};
 
-
 	/**
 	* 色生成：シード値を与えてRGB値を返す
 	* @method getRndRGB_02
@@ -51,7 +50,6 @@
 			rgb = "rgb("+r+", "+g+", "+b+")";
 		return rgb;
 	};
-
 
 	/**
 	* 色生成：シード値を与えてRGBA値を返す
@@ -72,7 +70,6 @@
 		return rgba;
 	};
 	
-	
 	/**
 	* 色生成：シード値を与えてRGBA値を返す
 	* @method getRndRGBA
@@ -91,7 +88,6 @@
 		return rgba;
 	};
 
-
 	/**
 	* 色生成：シード値を与えてランダムなHEX値を返す
 	* @method getRndHEX
@@ -106,7 +102,6 @@
 		return "#" + hex.substr( hex.length - 6, 6 );
 	};
 
-
 	/**
 	* 演算：差の絶対値を計算する
 	* @method abs
@@ -119,7 +114,6 @@
 		return _absNum;
 	};
 
-
 	/**
 	* 座標取得：ポイント01とポイント02の２点間の距離算出する
 	* @method getPointDistance
@@ -128,17 +122,23 @@
 	* @return{Number} 距離
 	*/
 	METHOD.getPointDistance = function(_p1,_p2){
-		var p1 = _p1,
-			p2 = _p2,
-			a = 0,
-			b = 0,
-			d = 0;
-		a = p1.x - p2.x;
-		b = p1.y - p2.y;
-		d = Math.sqrt(Math.pow(a,2) + Math.pow(b,2));
+		var p1	= _p1,
+			p2	= _p2,
+			a	= p1.x - p2.x,
+			b	= p1.y - p2.y,
+			d	= Math.sqrt(Math.pow(a,2) + Math.pow(b,2));
 		return d;
 	};
-
+	
+	METHOD.getAreaDistance = function(_p1,_p2,_range){
+		var p1	= _p1,
+			p2	= _p2,
+			a	= p1.x - p2.x,
+			b	= p1.y - p2.y,
+			d	= Math.sqrt(Math.pow(a,2) + Math.pow(b,2)),
+			areaDistance  = (d < _range) ? (_range - d)|0  : 0;
+		return (a > 0)? areaDistance : -areaDistance;
+	};
 
 	/**
 	* 座標取得：マウスポインタ座標取得
@@ -154,7 +154,6 @@
 		return point;
 	};
 
-
 	/**
 	 * 数値取得：ウィンドウの幅を取得
 	 * @method getWindowWidth
@@ -165,7 +164,6 @@
 		return _width;
 	};
 
-
 	/**
 	 * 数値取得：ウィンドウの高さを取得
 	 * @method getWindowHeight
@@ -175,7 +173,6 @@
 		var _height = window.innerHeight || document.body.clientHeight;
 		return _height;
 	};
-
 
 	/**
 	 * 数値取得：スクロール値を取得

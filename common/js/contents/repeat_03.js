@@ -26,19 +26,18 @@
 	--------------------------------------------------------------------*/
 	var LineGrid = function(){
 		this.elements		= [];
-		this.size			= 200;
-		this.patternRepeat 	= 10;
-		this.patternMargin	= 3;
-		this.centeringLevel	= 1;
-		this.lineWidth		= 1;
+		this.size			= 50;
+		this.lineWidth		= 10;
+		this.lineWidth_02	= 10;
+		this.lineWidthLimit	= 20;
+		this.lineCap		= "round";
 		this.strokeAlpha	= 1;
-		this.bgColor 		= "rgb(200, 200, 200)";
-		this.strokeColor 	= "#000000";
-		this.doFill			= false;
+		this.strokeColor 	= LIB.getRndHEX(255);
+		this.strokeColor_02 = LIB.getRndHEX(255);
+		this.bgColor 		= "rgb(21, 21, 21)";
+		this.doTwinColor	= false;
 		this.doPosNoise		= false;
 		this.posNoiseLimit	= 4;
-		this.doArcNoise		= false;
-		this.arcNoiseLimit	= 4;
 		
 		window.addEventListener("resize",this.resizeEvent.bind(this));
 		window.addEventListener("mousemove",this.dinamicParamChange.bind(this));
@@ -72,7 +71,7 @@
 				this.elements.push({
 					x:_x,
 					y:_y,
-					type:Math.random()*4|0
+					type:Math.random()*2|0
 				})
 			}
 		}
@@ -90,8 +89,10 @@
 		_c.globalAlpha 	= this.bgAlpha;
 		_c.globalCompositeOperation = "source-over";
 		_c.fillRect(0,0,winWidth,winHeight);
+		
 		_c.globalAlpha 	= 1;
 		_c.lineWidth 	= (this.lineWidth * 100 | 0) / 100;
+		_c.lineCap		= this.lineCap;
 		_c.fillStyle	= _c.strokeStyle 	= this.strokeColor;
 	};
 
@@ -100,35 +101,27 @@
 	 * @param {object} _elm 要素単体
 	 */
 	Member.drawElement = function(_elm){
-		var _c 		= ctx,
-			_size	= this.size,
-			_radius = _size/2,
-			_len	= (this.patternRepeat === 0)?1:this.patternRepeat,
-			_type	= _elm.type,
-			_x		= _elm.x,
-			_y		= _elm.y;
+		var _c 			= ctx,
+			_size		= this.size,
+			_radius 	= _size,
+			_type		= _elm.type,
+			_posNoise	= (this.doPosNoise)?(Math.random()*this.posNoiseLimit-this.posNoiseLimit/2 *10|0)/10:0,
+			_x			= _elm.x * _radius + _posNoise,
+			_y			= _elm.y * _radius + _posNoise;
 		
-		for(var i=0; i<_len; i++){
-			var _margin 	= i*this.patternMargin,
-				_margin2 	= _margin*this.centeringLevel,
-				_posNoise	= (this.doPosNoise)?(Math.random()*this.posNoiseLimit-this.posNoiseLimit/2 *10|0)/10:0,
-				_arcNoise	= (this.doArcNoise)?(Math.random()*this.arcNoiseLimit-this.arcNoiseLimit/2 *10|0)/10:0,
-				_arcSize	= _radius - _margin + _arcNoise,
-				_arcX		= _x*_size+_radius + _posNoise,
-				_arcY 		= _y*_size+_radius + _posNoise;
-			
-			if(_arcSize<=0) continue; 
-			
-			_c.beginPath();
-			if(_type === 0) _c.arc(_arcX,_arcY-_margin2,_arcSize,0,endAngle,false);
-			else if(_type === 1) _c.arc(_arcX,_arcY+_margin2,_arcSize,0,endAngle,false);
-			else if(_type === 2) _c.arc(_arcX-_margin2,_arcY,_arcSize,0,endAngle,false);
-			else if(_type === 3) _c.arc(_arcX+_margin2,_arcY,_arcSize,0,endAngle,false);
-			_c.closePath();
-			
-			if(this.doFill) _c.fill();
-			else _c.stroke();
+		_c.beginPath();
+		if(_type === 0){
+			if(this.doTwinColor) _c.strokeStyle = this.strokeColor;
+			_c.lineWidth = this.lineWidth;
+			_c.moveTo(_x,_y);
+			_c.lineTo(_x+_radius,_y+_radius);
+		}else if(_type === 1){
+			if(this.doTwinColor) _c.strokeStyle = this.strokeColor_02;
+			_c.lineWidth = this.lineWidth_02;
+			_c.moveTo(_x+_radius,_y);
+			_c.lineTo(_x,_y+_radius);
 		}
+		_c.stroke();
 	};
 	
 	/**
@@ -164,8 +157,8 @@
 		_point.x = e.pageX;
 		_point.y = e.pageY;
 		
-		this.centeringLevel= (_point.y / winHeight * 100 | 0) / 100;
-		this.patternRepeat = (_point.x / winWidth * 30 | 0);
+		this.lineWidth		= (_point.x / winWidth * this.lineWidthLimit | 0);
+		this.lineWidth_02	= (_point.y / winHeight * this.lineWidthLimit | 0);
 		this.loop();
 	};
 	
@@ -194,16 +187,14 @@ var INDEX = new LineGrid();
 	 * dat.GUI用オブジェクト
 	*/
 var GUI = new dat.GUI();
-GUI.add(INDEX,"size",4,200).onChange(function(){ INDEX.init() });
-GUI.add(INDEX,"lineWidth",0.01,10).onChange(function(){ INDEX.loop() });
-GUI.add(INDEX,"patternMargin",0,5).onChange(function(){ INDEX.loop() });
+GUI.add(INDEX,"size",1,100).onChange(function(){ INDEX.init() });
+GUI.add(INDEX,"lineWidthLimit",1,30).onChange(function(){ INDEX.loop() });
+GUI.add(INDEX,"lineCap",["round","butt","square"]).onChange(function(){ INDEX.loop() });
 GUI.add(INDEX,"strokeAlpha",0.01,1).onChange(function(){ INDEX.loop() });
 GUI.addColor(INDEX,"bgColor").onChange(function(){ INDEX.loop() });
 GUI.addColor(INDEX,"strokeColor").onChange(function(){ INDEX.loop() });
-GUI.add(INDEX,"doFill").onChange(function(){ INDEX.loop() });
+GUI.addColor(INDEX,"strokeColor_02").onChange(function(){ INDEX.loop() });
 GUI.add(INDEX,"doPosNoise").onChange(function(){ INDEX.loop() });
 GUI.add(INDEX,"posNoiseLimit",1,100).onChange(function(){ INDEX.loop() });
-GUI.add(INDEX,"doArcNoise").onChange(function(){ INDEX.loop() });
-GUI.add(INDEX,"arcNoiseLimit",1,20).onChange(function(){ INDEX.loop() });
 
 
