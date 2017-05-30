@@ -19,10 +19,9 @@
 		n_noiseRange = 0,
 		n_noiseSeed = 0;
 
-
-
 	
 
+	
 	/*object
 	--------------------------------------------------------------------*/
 	
@@ -67,6 +66,9 @@
 		//色
 		fillColor:lib.getRndRGB(200),
 		strokeColor:lib.getRndRGB(200),
+		r:10,
+		g:Math.random()*200|0 + 55,
+		b:Math.random()*200|0 + 55,
 		bgColor:lib.getRndRGB(50,205),
 		
 		//分岐
@@ -100,9 +102,10 @@
 
 	gui.add(param,'composition',["source-over","xor","lighter","multiply","difference"]);
 	gui.add(param,'rotateType',["01","02","03","04"]);
-//	gui.add(param, 'flgStroke',false);
-//	gui.add(param, 'flgFill',false);
-	gui.addColor(param, 'fillColor');
+	gui.add(param,'r',0,255);
+	gui.add(param,'g',0,255);
+	gui.add(param,'b',0,255);
+	gui.addColor(param, 'bgColor');
 	gui.add(param, 'bgAlpha',0,1);
 	var paramFlgAnim = gui.add(param, 'flgAnim',false);
 
@@ -198,22 +201,20 @@
 		var	_colorNoise = Math.random()*10|0,
 			_xNoiseStep = param.noiseStepX,
 			_yNoiseStep = param.noiseStepY,
-			_xStep	= param.stepX,
-			_yStep	= param.stepY,
-			_size 	= 40,
-			_limitSize = param.limitSize,
-			_PI = ((Math.PI*360)*100|0)/100,
-			_PI_02 = Math.PI / 180;
+			_xStep		= param.stepX,
+			_yStep		= param.stepY,
+			_size 		= 40,
+			_limitSize 	= param.limitSize,
+			_PI 		= ((Math.PI*360)*100|0)/100,
+			_PI_02 		= Math.PI / 180;
 
 		//ステップ数毎にxとy軸にシェイプを描画
-		for(var y=0; y<n_ih; y+=_yStep){
+		for(var y=0; y<n_ih; y=(y+_yStep)|0){
 			
 			yNoise += _yNoiseStep;
 			xNoise = xStartNoise;
 			
-			
-			
-			for(var x=0; x<n_iw; x+=_xStep){
+			for(var x=0; x<n_iw; x=(x+_xStep)|0){
 				xNoise += _xNoiseStep;
 				_colorNoise += _xNoiseStep;
 
@@ -232,10 +233,26 @@
 					_rndTranslateY = p.randomTranslateY,
 					_translateX = ((_x + _width * 0.5)  + (Math.random()*_rndTranslateX) - (_rndTranslateX>>1))|0,
 					_translateY = ((_y + _height * 0.5)  + (Math.random()*_rndTranslateY) - (_rndTranslateY>>1))|0,
-					_g			= Math.random()*200|0 + 55,
-					_b			= Math.random()*200|0 + 55;
+					_check	= Math.random()*4|0,
+					_rnd = Math.random()*100|0,
+					_rnd_half = _rnd>>1,
+					_r = (param.r + (Math.random()*_rnd|0)- _rnd_half)|0,
+					_g = (param.g + (Math.random()*_rnd|0)- _rnd_half)|0,
+					_b = (param.b + (Math.random()*_rnd|0)- _rnd_half)|0;
 				
-				c.strokeStyle = c.fillStyle = lib.getRndRGBA_02(10,_g,_b,_alpha);
+				_r = (_r > 255)?"255":_r;
+				_g = (_g > 255)?"255":_g;
+				_b = (_b > 255)?"255":_b;
+				
+				if(_check === 0) {
+					_r = 255;
+					_g = 200;
+					_b = 100;
+				}
+				
+				
+//				c.fillStyle = lib.getRndRGBA_02(param.r,param.g,param.b,_alpha);
+				c.fillStyle = "rgba("+_r+","+_g+","+_b+","+_alpha+")";
 				c.beginPath();
 								
 				if(p.rotateType === "01"){
@@ -260,11 +277,7 @@
 					c.translate(-_translateX, -_translateY);
 					c.restore();
 				}
-				
-//				c.closePath();
-//				c.fill();
 			}
-
 		}
 		yNoise = xStartNoise;
 		xStartNoise += param.noiseAnimeStep;

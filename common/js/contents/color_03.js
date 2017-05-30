@@ -14,6 +14,7 @@
 		winWidth	= window.innerWidth,
 		winHeight	= window.innerHeight;
 
+	
 
 
 	/*constructor
@@ -24,6 +25,7 @@
 		this.radius		 = 300;
 		this.xRatio		= 1;
 		this.yRatio		= 1;
+		
 		this.bgColor	= "#ffffff";
 		this.bgOpacity	= 1;
 		this.hue		= 0;
@@ -38,11 +40,14 @@
 			x:window.innerWidth >> 1,
 			y:window.innerHeight >> 1
 		};
-		this.noiseLimit	= 10;
-		this.doPosNoise	= false;
-		this.doLigNoise = false;
-		this.doSatNoise = false;
+		this.noiseLimit		= 10;
+		this.posNoiseLimit	= 10;
+		this.doPosNoise	= true;
+		this.doHueNoise = true;
+		this.doLigNoise = true;
+		this.doSatNoise = true;
 		this.doLineDraw = false;
+		this.doAnimation= false;
 		this.init();
 	},
 		Member = Index.prototype;
@@ -50,14 +55,16 @@
 
 
 
-
 	/*method
 	--------------------------------------------------------------------*/
 	Member.init = function(){
 		var _self = this;
-//		window.addEventListener("mousemove",function(e){
-//			_self.mousePoint = LIB.getMousePoint(e);
-//		});
+		window.addEventListener("mousemove",function(e){
+			_self.mousePoint = LIB.getMousePoint(e);
+			_self.xRatio	= (_self.mousePoint.x / winWidth * 100 | 0 )/100;
+			_self.yRatio	= (_self.mousePoint.y / winHeight * 100 | 0 )/100;
+			_self.draw();
+		});
 		window.addEventListener("resize",this.resize.bind(this));
 		this.resize();
 		this.draw();
@@ -86,6 +93,8 @@
 			_angleBase	= 360 / _len,
 			_endAngle	= Math.PI/180,
 			_adustAngle	= (_len > 100)?1:0.1,
+			_xRange 	= this.xRatio * 100,
+			_yRange 	= this.yRatio * 100,
 			_x,_y,_nx,_ny;
 		
 		_c.globalAlpha 	= this.bgOpacity;
@@ -95,24 +104,26 @@
 				_nextAngle	= (i+1)*_angleBase + _adustAngle,
 				_radian 	= _angle *_endAngle,
 				_nextRad	= _nextAngle *_endAngle,
-				_posNoise	= (this.doPosNoise)? (Math.random()*this.noiseLimit - this.noiseLimit/2) | 0 : 0,
-				_satNoise	= (this.doSatNoise)? (Math.random()*this.noiseLimit - this.noiseLimit/2) | 0 : 0,
-				_ligNoise	= (this.doLigNoise)? (Math.random()*this.noiseLimit - this.noiseLimit/2) | 0 : 0,
-				_color 		= this.convertHslToRgb(_angle,this.saturation+_satNoise,this.lightness+_ligNoise);
-
+				_posNoise	= (this.doPosNoise)? (Math.random()*_xRange - _xRange/2) | 0 : 0,
+				_hueNoise	= (this.doHueNoise)? (Math.random()*_yRange - _yRange/2) | 0 : 0,
+				_satNoise	= (this.doSatNoise)? (Math.random()*_yRange - _yRange/2) | 0 : 0,
+				_ligNoise	= (this.doLigNoise)? (Math.random()*_yRange - _yRange/2) | 0 : 0,
+				_hue		= ((_angle + _hueNoise) > 360)? 360 : _angle + _hueNoise,
+				_color 		= this.convertHslToRgb(_hue,this.saturation+_satNoise,this.lightness+_ligNoise);
 			
-			_x = _cp.x + _posNoise + _radius * Math.cos(_radian);
-			_y = _cp.y + _posNoise + _radius * Math.sin(_radian);
+			_x 	= _cp.x + _posNoise + _radius * Math.cos(_radian);
+			_y 	= _cp.y + _posNoise + _radius * Math.sin(_radian);
 			_nx = _cp.x + _posNoise + _radius * Math.cos(_nextRad);
 			_ny = _cp.y + _posNoise + _radius * Math.sin(_nextRad);
 			
-			_c.fillStyle = "rgb("+_color.r+","+_color.g+","+_color.b+")";
+			_c.fillStyle = _c.strokeStyle = "rgb("+_color.r+","+_color.g+","+_color.b+")";
 			_c.beginPath();
 			_c.moveTo(_cp.x + _posNoise,_cp.y+_posNoise);
 			_c.lineTo(_x,_y);
 			_c.lineTo(_nx,_ny);
 			_c.closePath();
-			_c.fill();
+			if(this.doLineDraw) _c.stroke();
+			else _c.fill();
 		};
 	};
 
@@ -187,13 +198,17 @@ var INDEX = new Index();
 	 * dat.GUI用オブジェクト
 	 */
 var DAT = new dat.GUI();
-DAT.add(INDEX,"pieceLength",3,360).onChange(function(){ INDEX.draw()});
-DAT.add(INDEX,"saturation",0,100).onChange(function(){ INDEX.draw()});
-DAT.add(INDEX,"lightness",0,100).onChange(function(){ INDEX.draw()});
-DAT.add(INDEX,"bgOpacity",0,1).onChange(function(){ INDEX.draw()});
-DAT.add(INDEX,"doPosNoise").onChange(function(){ INDEX.draw()});
-DAT.add(INDEX,"doLigNoise").onChange(function(){ INDEX.draw()});
-DAT.add(INDEX,"doSatNoise").onChange(function(){ INDEX.draw()});
-DAT.add(INDEX,"noiseLimit",0,100).onChange(function(){ INDEX.draw()});
+DAT.add(INDEX,"pieceLength",3,360).onChange(function(){ /*INDEX.draw()*/});
+DAT.add(INDEX,"radius",10,500).onChange(function(){ /*INDEX.draw()*/});
+DAT.add(INDEX,"saturation",0,100).onChange(function(){ /*INDEX.draw()*/});
+DAT.add(INDEX,"lightness",0,100).onChange(function(){ /*INDEX.draw()*/});
+DAT.add(INDEX,"bgOpacity",0,1).onChange(function(){ /*INDEX.draw()*/});
+DAT.add(INDEX,"doLineDraw").onChange(function(){ /*INDEX.draw()*/});
+DAT.add(INDEX,"doPosNoise").onChange(function(){ /*INDEX.draw()*/});
+DAT.add(INDEX,"doHueNoise").onChange(function(){ /*INDEX.draw()*/});
+DAT.add(INDEX,"doLigNoise").onChange(function(){ /*INDEX.draw()*/});
+DAT.add(INDEX,"doSatNoise").onChange(function(){ /*INDEX.draw()*/});
+DAT.add(INDEX,"noiseLimit",0,100).onChange(function(){ /*INDEX.draw()*/});
+//DAT.add(INDEX,"doAnimation").onChange(function(){ INDEX.init()});
 
 

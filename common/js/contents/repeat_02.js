@@ -16,7 +16,8 @@
 		},
 		winWidth 	= window.innerWidth || document.body.clientWidth,  //ウィンドウ幅
 		winHeight	= window.innerHeight || document.body.clientHeight,
-		endAngle 	= Math.PI * 180;
+		endAngle 	= Math.PI * 180,
+		twoPi		= Math.PI * 2;
 	
 	
 	
@@ -24,19 +25,32 @@
 	/*SubClass Dot
 	--------------------------------------------------------------------*/
 	var LineGrid = function(){
+		this.elements		= [];
+		this.size			= 200;
+		this.patternRepeat 	= 10;
+		this.patternMargin	= 3;
+		this.centeringLevel	= 1;
+		this.lineWidth		= 1;
+		this.strokeAlpha	= 1;
+		this.bgColor 		= "rgb(200, 200, 200)";
+		this.strokeColor 	= "#000000";
+		this.doFill			= false;
+		this.doPosNoise		= false;
+		this.posNoiseLimit	= 4;
+		this.doArcNoise		= false;
+		this.arcNoiseLimit	= 4;
+		
+		window.addEventListener("resize",this.resizeEvent.bind(this));
+		window.addEventListener("mousemove",this.dinamicParamChange.bind(this));
 		this.init();
 	},
 		Member = LineGrid.prototype;
 	
-	Member.bgColor 		= "rgba(0,0,0,1)";
 	Member.bgAlpha		= 1;
 	Member.xLength		= 40;
 	Member.yLength		= 30;
-	Member.radiusScale	= 20;
 	Member.xMargin		= 0;
 	Member.yMargin		= 0;
-	Member.lineWidth	= 5;
-	Member.strokeColor  = "#ffffff";
 	Member.seedAnimStep = 0.05;
 	Member.seedStepX	= 0.0006;
 	Member.seedStepY	= 0.0003;
@@ -47,8 +61,22 @@
 	 * starting method
 	 */
 	Member.init = function(){
-		window.addEventListener("resize",this.resizeEvent.bind(this));
-		window.addEventListener("mousemove",this.dinamicParamChange.bind(this));
+		var _size	= this.size,
+			_xLen	= winWidth/_size,
+			_yLen	= winHeight/_size;
+
+		this.elements = [];
+		
+		for(var _x=0; _x < _xLen; _x++){
+			for(var _y=0; _y < _yLen; _y++){
+				this.elements.push({
+					x:_x,
+					y:_y,
+					type:Math.random()*4|0
+				})
+			}
+		}
+
 		this.resizeEvent();
 		this.loop();
 	};
@@ -63,83 +91,65 @@
 		_c.globalCompositeOperation = "source-over";
 		_c.fillRect(0,0,winWidth,winHeight);
 		_c.globalAlpha 	= 1;
-		_c.lineWidth 	= this.lineWidth;
+		_c.lineWidth 	= (this.lineWidth * 100 | 0) / 100;
 		_c.fillStyle	= _c.strokeStyle 	= this.strokeColor;
 	};
-	
-	
-	Member.drawElement = function(x,y,radius){
-		var _c 			= ctx,
-			_noiseRadius= ((noise.perlin2(SEED.x,SEED.y))*this.radiusScale|0) /*+ (Math.random()*5|0)*/,
-			//			_radius 	= ((radius - _noiseRadius) <= 0)? radius : radius - _noiseRadius,
-			_radius 	= radius,
-			_judge		= (Math.random()*2),
-			_level		= ((Math.random()*5)>>0)+2,
-			_lw			= 10;
 
-		_level = 1;
-		//		_c.lineCap = "butt";
-		//		_c.fillStyle =  "#f70000";
-		//		_c.fillRect(x,y,_radius,_radius);
-		_c.lineCap = "round";
-		//		_c.lineWidth 	= _p.lineWidth;
-
-		_c.beginPath();
-		if(_judge >= 1){
-			_c.moveTo(x,y);
-			_c.lineTo((x+_radius*_level),(y+_radius*_level));
-		}else{
-			//			_c.lineCap = "square";
-			_c.moveTo((x+_radius),y);
-			_c.lineTo(x,(y+_radius));
+	/**
+	 * 描画
+	 * @param {object} _elm 要素単体
+	 */
+	Member.drawElement = function(_elm){
+		var _c 		= ctx,
+			_size	= this.size,
+			_radius = _size/2,
+			_len	= (this.patternRepeat === 0)?1:this.patternRepeat,
+			_type	= _elm.type,
+			_x		= _elm.x,
+			_y		= _elm.y;
+		
+		for(var i=0; i<_len; i++){
+			var _margin 	= i*this.patternMargin,
+				_margin2 	= _margin*this.centeringLevel,
+				_posNoise	= (this.doPosNoise)?(Math.random()*this.posNoiseLimit-this.posNoiseLimit/2 *10|0)/10:0,
+				_arcNoise	= (this.doArcNoise)?(Math.random()*this.arcNoiseLimit-this.arcNoiseLimit/2 *10|0)/10:0,
+				_arcSize	= _radius - _margin + _arcNoise,
+				_arcX		= _x*_size+_radius + _posNoise,
+				_arcY 		= _y*_size+_radius + _posNoise;
+			
+			if(_arcSize<=0) continue; 
+			
+			_c.beginPath();
+			if(_type === 0) _c.arc(_arcX,_arcY-_margin2,_arcSize,0,endAngle,false);
+			else if(_type === 1) _c.arc(_arcX,_arcY+_margin2,_arcSize,0,endAngle,false);
+			else if(_type === 2) _c.arc(_arcX-_margin2,_arcY,_arcSize,0,endAngle,false);
+			else if(_type === 3) _c.arc(_arcX+_margin2,_arcY,_arcSize,0,endAngle,false);
+			_c.closePath();
+			
+			if(this.doFill) _c.fill();
+			else _c.stroke();
 		}
-		_c.stroke();
-
-		//		SEED.x += 0.00001;
-		//		SEED.y += 0.00001;
 	};
-
-	//円描画をリピートする
+	
+	/**
+	 * 各要素を描画
+	 */
 	Member.drawRepeat = function(){
-		var _xMargin	= this.xMargin,
-			_yMargin	= this.yMargin,
-			_xLength 	= this.xLength,
-			_radius		= winWidth / _xLength,
-			_yLength 	= (winHeight / _radius >> 0) + 1,//this.yLength,
-			_xDistance 	= ((winWidth - _xMargin*2) - ((_xLength-1) * (_radius*2))) / _xLength,
-			_yDistance 	= ((winHeight - _yMargin*2) - ((_yLength-1) * (_radius*2))) / _yLength;
-
-//		_xDistance = _yDistance = 1;
-
-		for( var x = 0; x<_xLength; x++){
-			SEED.y += this.seedStepX;
-			SEED.x = SEED.startX;
-
-			for(var y = 0; y<_yLength; y++){
-				SEED.x += this.seedStepX;
-//				var _x = ((x*_radius*2) + (x*_xDistance) + (_xDistance/2) + _xMargin)|0,
-//					_y = ((y*_radius*2) + (y*_yDistance) + (_yDistance/2) + _yMargin)|0;
-				var _x = x * _radius,
-					_y = y * _radius;
-				this.drawElement(_x,_y,_radius);
-			}
+		var _c 			= ctx,
+			_elements	= this.elements;
+		_c.globalAlpha = this.strokeAlpha;
+		for(var _i=0; _i<_elements.length; _i++){
+			this.drawElement(_elements[_i]);
 		}
-		//		SEED.x += this.seedStepX;
-		SEED.y 		= SEED.startX;
-		SEED.startX += this.seedAnimStep;
-		//		SEED.y += this.seedStepY;
-		//		SEED.y 
 	};
-	
+
 	/**
 	 * animation loop
 	 */
 	Member.loop = function(){
-		stats.begin();
 		this.baseDraw();
 		this.drawRepeat();
 		if(this.isAnimation === true) window.requestAnimationFrame(this.loop.bind(this));
-		stats.end();
 	};
 	
 	/**
@@ -153,8 +163,9 @@
 			};
 		_point.x = e.pageX;
 		_point.y = e.pageY;
-		var _width =  (_point.y / winHeight * 1200 | 0) / 100;
-		this.lineWidth = _width;
+		
+		this.centeringLevel= (_point.y / winHeight * 100 | 0) / 100;
+		this.patternRepeat = (_point.x / winWidth * 30 | 0);
 		this.loop();
 	};
 	
@@ -171,67 +182,28 @@
 	
 	
 	
-	/*develop object
-	--------------------------------------------------------------------*/
-	/* @object Stats
-	 * 処理速度確認用
-	*/
-	var stats = new Stats();
-	stats.setMode( 0 );
-	document.body.appendChild( stats.domElement );
-	stats.domElement.style.position = "fixed";
-	stats.domElement.style.right = "0";
-	stats.domElement.style.bottom = "5px";
-
-	/* @object
-	 * dat.GUI用オブジェクト
-	*/
-	var GUI = new dat.GUI();
-
-	GUI.add(LineGrid,"xLength",1,200).onChange(function(_val){
-		if(LineGrid.isAnimation === false) LineGrid.loop();
-	});
-	GUI.add(LineGrid,"lineWidth",1,20).onChange(function(_val){
-		if(LineGrid.isAnimation === false) LineGrid.loop();
-	});
-	GUI.addColor(LineGrid,"strokeColor").onChange(function(_val){
-		if(LineGrid.isAnimation === false) LineGrid.loop();
-	});
-	GUI.addColor(LineGrid,"bgColor").onChange(function(_val){
-		if(LineGrid.isAnimation === false) LineGrid.loop();
-	});
-	//	GUI.add(PARAM,"yLength",1,200).onChange(function(_val){
-	//		if(PARAM.isAnimation === false) loop();
-	//	});
-	//	GUI.add(PARAM,"xMargin",1,200).onChange(function(_val){
-	//		if(PARAM.isAnimation === false) loop();
-	//	});
-	//	GUI.add(PARAM,"yMargin",1,200).onChange(function(_val){
-	//		if(PARAM.isAnimation === false) loop();
-	//	});
-	//	GUI.add(PARAM,"radiusScale",1,50).onChange(function(_val){
-	//		if(PARAM.isAnimation === false) loop();
-	//	});
-	//	GUI.add(PARAM,"seedAnimStep",0,0.2).onChange(function(_val){
-	//		if(PARAM.isAnimation === false) loop();
-	//	});
-	//	GUI.add(PARAM,"seedStepX",0,0.5).onChange(function(_val){
-	//		if(PARAM.isAnimation === false) loop();
-	//	});
-	//	GUI.add(PARAM,"seedStepY",0,0.5).onChange(function(_val){
-	//		if(PARAM.isAnimation === false) loop();
-	//	});
-	GUI.add(LineGrid,"bgAlpha",0,1);
-	GUI.add(LineGrid,"isAnimation").onChange(function(_val){
-		LineGrid.isAnimation = _val;
-		if(_val) LineGrid.loop();
-	});
-
-
-	
-	
-	
 	window.LineGrid = LineGrid;
 }());
 
-var LG = new LineGrid();
+var INDEX = new LineGrid();
+
+
+/*develop object
+	--------------------------------------------------------------------*/
+/* @object
+	 * dat.GUI用オブジェクト
+	*/
+var GUI = new dat.GUI();
+GUI.add(INDEX,"size",4,200).onChange(function(){ INDEX.init() });
+GUI.add(INDEX,"lineWidth",0.01,10).onChange(function(){ INDEX.loop() });
+GUI.add(INDEX,"patternMargin",0,5).onChange(function(){ INDEX.loop() });
+GUI.add(INDEX,"strokeAlpha",0.01,1).onChange(function(){ INDEX.loop() });
+GUI.addColor(INDEX,"bgColor").onChange(function(){ INDEX.loop() });
+GUI.addColor(INDEX,"strokeColor").onChange(function(){ INDEX.loop() });
+GUI.add(INDEX,"doFill").onChange(function(){ INDEX.loop() });
+GUI.add(INDEX,"doPosNoise").onChange(function(){ INDEX.loop() });
+GUI.add(INDEX,"posNoiseLimit",1,100).onChange(function(){ INDEX.loop() });
+GUI.add(INDEX,"doArcNoise").onChange(function(){ INDEX.loop() });
+GUI.add(INDEX,"arcNoiseLimit",1,20).onChange(function(){ INDEX.loop() });
+
+

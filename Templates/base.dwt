@@ -26,7 +26,9 @@
 		<!-- TemplateBeginEditable name="メイン部分" -->
 		<!-- TemplateEndEditable -->
 	</main>
-	<canvas id="myCanvas" width="800" height="600"></canvas>
+	<div id="canvas-container">
+    	<canvas id="myCanvas" width="800" height="600"></canvas>	    
+	</div>
 	<!-- /============= contents ============= --> 
 	<!-- TemplateBeginEditable name="wrapper-last" --> <!-- TemplateEndEditable --> </div>
 <!-- /============= wrapper ============= --> 

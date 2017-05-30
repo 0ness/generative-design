@@ -28,8 +28,8 @@
 		//描画要素
 		composition:"source-over",
 		cellSize:6,
-		calcType:4,
-		drawType:3,
+		calcType:1,
+		drawType:1,
 
 		//色
 		fillColor:lib.getRndRGB(255),
@@ -43,7 +43,7 @@
 		flgStroke:true,
 		flgFill:false,
 		flgBG:false,
-		flgAnim:false
+		flgAnim:true
 	};
 
 
@@ -76,7 +76,7 @@
 		param.drawType = parseInt(_val);
 		resetup();
 	});
-	gui.add(param,'flgAnim',false).onChange(function(){
+	gui.add(param,'flgAnim',true).onChange(function(){
 		loop();
 	});
 
@@ -447,7 +447,6 @@
 		if(param.flgAnim === true) window.requestAnimationFrame(loop);
 	};
 
-	
 	/* リサイズ */
 	var resize = function(){
 		n_iw = window.innerWidth || document.body.clientWidth;
@@ -464,7 +463,7 @@
 	--------------------------------------------------------------------*/
 	resetup();
 	window.addEventListener("resize",resetup);
-	
+	loop();
 	
 	
 	
