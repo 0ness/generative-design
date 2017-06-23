@@ -1,3 +1,9 @@
+/*
+DOM オブジェクトを Canvas に描画する - HTML | MDN - https://developer.mozilla.org/ja/docs/Web/HTML/Canvas/Drawing_DOM_objects_into_a_canvas
+styleタグのCSSや外部CSSの値を取得 - 三等兵 http://d.hatena.ne.jp/sandai/20100616/p1
+ */
+
+
 /*property
 --------------------------------------------------------------------*/
 var TwoPi 	= Math.PI * 2,
@@ -5,8 +11,14 @@ var TwoPi 	= Math.PI * 2,
 	winWidth 	= window.innerWidth,
     winHeight 	= window.innerHeight,
 	
+	lifeLetter  = 180,
+	maxLife		= 0,
 	maxCount 	= 5000,
+	lifeCount 	= maxLife,
+	lifeSpd 	= 1,
+	loopCount 	= 0,
 	currentCount= 0,
+	drawHeight  = 0,
 	
 	pixels 		= [],
 	drawPixels  = [],
@@ -15,10 +27,10 @@ var TwoPi 	= Math.PI * 2,
 	
 	minRadius 	= 2,
 	maxRadius 	= 1,
-	gridUnit 	= 5,
+	gridUnit 	= 4,
 	
 	//for mouse and arrow up/down interaction
-	mouseRect 	= 50,
+	mouseRectSize 	= 50,
 	
 	freeze 		= false,
 	isPressed 	= false,
@@ -29,16 +41,24 @@ var TwoPi 	= Math.PI * 2,
 	isFill 		= true,
 	onGrid 		= true,
 
+	LIB 			= new Planet(),
+	OFFSET_CANVAS 	= new OffsetCanvasCss(),
 	
-	LIB 		= new Planet(),
-	
-	//fillColor 		= LIB.getRndRGBA_02(50,200,200,1,40),
+	//fillColor 	= LIB.getRndRGBA_02(50,200,200,1,40),
 	fillColor 		= LIB.getRndRGBA_02(0,0,0,1,40),
 	strokeColor 	= LIB.getRndHEX(100),
 	strokeColor 	= "#ffffff",
 	strokeColor_02 	= LIB.getRndHEX(100),
 	strokeWidth 	= .5,
 	bgColor 		= "#ddd",
+	
+	fontStyle		= {
+		fontSize:60,
+		lineHeight:1,
+		letterSpacing:0,
+		marginX:0,
+		marginY:10
+	},
 	
 	canvas,
 	ctx;
@@ -49,7 +69,7 @@ var TwoPi 	= Math.PI * 2,
 /*function
 --------------------------------------------------------------------*/
 var setup = function() {
-    var myCanvas = createCanvas(winWidth, winHeight);
+	var myCanvas = createCanvas(winWidth, document.getElementById("canvas-container").offsetHeight);
     myCanvas.parent("canvas-container");
 	
 	canvas 	=  document.getElementById('defaultCanvas0');
@@ -67,24 +87,25 @@ var setup = function() {
 		background(bgColor);
 		drawLoop();
 	},false);
-	canvas.addEventListener('mousemove', function(e) {},false);
-	
+
+	// canvas.addEventListener('mousemove', function(e) {},false);
 	//createImageBitmap();
-	createCanvasText();
-	
-	//スタイル指定
-	//noStroke();
-	//noFill();
-	//background(bgColor);
+		background(bgColor);
 };
 
 var reset = function(){
 	currentCount= 0;
 	points		= [];
-	//pixels 		= [];
-	//drawPixels 	= [];
 	closestIndex= [];
+	loopCount 	= 0;
 	background(bgColor);
+};
+
+var radomNum = function(){
+	var _max = 250,
+		_min = 125,
+		_num = (Math.random()*_max - _min) + (Math.random()*_max - _min) + (Math.random()*_max - _min) + (Math.random()*_max - _min);
+	return _num / 4 | 0;
 };
 
 
@@ -92,25 +113,19 @@ var reset = function(){
  * 描画
  */
 var draw = function() {
-	for (var i=0; i<35; i=(i+1)|0) baseDraw();
+	if(!isAnimating && !isPressed) return false;
+	for (var i=0; i<20; i=(i+1)|0) baseDraw();
 };
 
 
 var baseDraw = function(){
-	if(!isAnimating && !isPressed) return false;
-
-	ctx.globalAlpha = 1;
-	//background(bgColor);
-
 	// create a random positon
 	var _rndPoint 	= Math.random()*drawPixels.length|0,
 		_point 		= drawPixels[_rndPoint],
-		_rndX 		= _point.x,
-		_rndY 		= _point.y,
-		_newX 		= convertIntMultiple(_rndX),
-		_newY 		= convertIntMultiple(_rndY),
-		//_newX = convertIntMultiple(random(maxRadius-50,winWidth - maxRadius + 100)),
-		//_newY = convertIntMultiple(random(maxRadius-50,winHeight - maxRadius + 100)),
+		_rndX 		= radomNum(),
+		_rndY 		= radomNum(),
+		_newX 		= convertIntMultiple(_point.x),
+		_newY 		= convertIntMultiple(_point.y),
 		_newR 		= maxRadius,
 		_newG 		= {
 			x:(Math.random()* 10 - 5)| 0,
@@ -119,7 +134,7 @@ var baseDraw = function(){
 
 	// create a random position according to mouse positon
 	if(isPressed == true) {
-		var _rectHalf = mouseRect >> 1;
+		var _rectHalf = mouseRectSize >> 1;
 		_newX = convertIntMultiple(random(mouseX - _rectHalf , mouseX + _rectHalf));
 		_newY = convertIntMultiple(random(mouseY - _rectHalf , mouseY + _rectHalf));
 		_newR = maxRadius;
@@ -136,7 +151,6 @@ var baseDraw = function(){
 			break;
 		}
 	};
-
 
 	// no intersection    add a new circle
 	if(_interSection === false) {
@@ -164,20 +178,25 @@ var baseDraw = function(){
 		points[currentCount] = point;
 		currentCount++;
 
-		drawSimple(point);
+		//draw them
+		drawPoint(point);
+		
+		//文字描画を止める
 	};
-
-	//draw them
-	//drawLoop();
+	
+	lifeCount -= lifeSpd|0;
+	if(lifeCount <= 0){
+		loopCount++;
+		lifeCount = maxLife;
+		changeCanvasText();
+	}
 
 	//visualize the random range of the new positions
 	if(isPressed == true) drawPressing();
-
-	//if(currentCount >= maxCount) noLoop();
 }
 
 
-var drawSimple = function(_p){
+var drawPoint = function(_p){
 	var _gap 	= _p.gap,
 		_x 		= _p.x,
 		_y 		= _p.y,
@@ -193,30 +212,27 @@ var drawSimple = function(_p){
 	if(isFill) fill(_fColor);
 	else noFill();
 
-	ctx.fillRect(_x,_y,1,1);
-
-	ellipse(_x,_y,_radius,_radius);
+	// ctx.fillRect(_x,_y,1,1);
 
 	if(isStroke_02){
-		
 		if(points.length === 1) return;
-		
 		var _n = closestIndex[currentCount-1];
-		//if(_n == null) _n = currentCount;
-		//console.log(_n,points.length);
 		strokeWeight(strokeWidth);
 		stroke(_sColor)
 		line(_x,_y,points[_n].x,points[_n].y);
 	}else {
 		noStroke();
 	}
-};
 
+	noStroke();
+	// ellipse(_x,_y,_radius,_radius);	
+	ctx.fillRect(_x-_radius,_y-_radius,_radius*2,_radius*2);
+};
 
 
 var drawLoop = function(){
 	var _points = points;
-
+	
 	for (var i=0; i< currentCount; i=(i+1)|0) {
 		
 		var _p 		= _points[i],
@@ -235,9 +251,9 @@ var drawLoop = function(){
 		if(isFill) fill(_fColor);
 		else noFill();
 		
-		ctx.fillRect(_x,_y,1,1);
-		
-		ellipse(_x,_y,_radius,_radius);
+		//ctx.fillRect(_x,_y,1,1);
+		//ellipse(_x,_y,_radius,_radius);
+		ctx.fillRect(_x-_radius,_y-_radius,_radius*2,_radius*2);
 		
 		if(isStroke_02){
 			var _n = closestIndex[i];
@@ -252,16 +268,16 @@ var drawLoop = function(){
 };
 
 var drawPressing = function(){
-	var _rectHalf = mouseRect >> 1;
+	var _rectHalf = mouseRectSize >> 1;
 	stroke("#ffba00");
 	strokeWeight(1);
 	noFill();
-	rect(mouseX - _rectHalf , mouseY - _rectHalf, mouseRect,mouseRect);
+	rect(mouseX - _rectHalf , mouseY - _rectHalf, mouseRectSize,mouseRectSize);
 };
 
 var keyPressed = function(){
-	if(keyCode == UP_ARROW) mouseRect += 4;
-	if(keyCode == DOWN_ARROW) mouseRect -= 4;
+	if(keyCode == UP_ARROW) mouseRectSize += 4;
+	if(keyCode == DOWN_ARROW) mouseRectSize -= 4;
 };
 
 var convertIntMultiple = function(_src){
@@ -275,115 +291,87 @@ var convertIntMultiple = function(_src){
 /**
  * 画像でビットマップの下地を作成
  */
-var createImageBitmap = function(){
-	var _c 		= ctx,
-		_img 	= new Image();
+var createCanvasText= function(_callback){	
 
-	_img.src = "images/bird_04.png";
-	_img.onload = function(){
-		var _x = (winWidth - _img.width) >> 2,
-			_y = ((winHeight - _img.height) >> 1) - 70;
-		_c.drawImage(_img,_x,_y);
-		var imageData = _c.getImageData(0, 0, winWidth, winHeight);
-		pixels = imageData.data;
-		//_c.clearRect(0, 0, winWidth, winHeight);
-	};
+	setRandomParam();
+
+	OFFSET_CANVAS.init({
+		type:"text",
+		text:getRandomStrings(),
+		x:100,
+		style:{
+			"font-size":fontStyle.fontSize + "px",
+			"line-height":fontStyle.lineHeight,
+			"letter-spacing":fontStyle.letterSpacing+"px"
+		},
+		callback:function(){
+			drawPixels = OFFSET_CANVAS.getDrawPixels();
+			drawHeight = OFFSET_CANVAS.height + fontStyle.marginY;
+			_callback();
+		}
+	});
 };
 
-/**
-	 * 文字の横書き処理
-	 * @param {object} _context ctxオブジェクト
-	 *　@param {string} text    文章
-	 *　@param {number} x       x座標
-	 *　@param {number} y       y座標
-	 */
-var horizonTexts = function(_param) {
-	var _c 				= ctx,
-		_x 				= _param.x || 0,
-		_y				= _param.y || 0,
-		_displayOutline = _param.displayOutline,
-		_doLetterRandom = _param.doLetterRandom,
-		_letters 		= _param.text.split('\n'),
-		_fontSize		= _param.fontSize || 50,
-		_letterHeight	= _fontSize,
-		_letterWidth	= _c.measureText("あ").width,
-		_letterSpacing 	= _param.letterSpacing || _fontSize,
-		_xLineHeight 	= _letterWidth + _letterSpacing;
+var changeCanvasText = function(){
+	var _rndX = (Math.random()*2) * 10 | 0,
+		_rndY = (Math.random()*40 - 20) | 0;
 
-	_c.fillStyle = "#000000";
-	_c.textBaseline = 'top';
-	_c.textAlign = "center";
-	_c.font = _fontSize +'px "Helvetica"';
+	setRandomParam();
 
-	for(var i=0; i<_letters.length; i=(i+1)|0){
-		var _elm 	= _letters[i],
-			_cx 	= (winWidth - (_xLineHeight *_elm.length)) >> 1;
-
-		for (var j=0; j<_elm.length; j=(j+1)|0) {
-			//var _letterX 	=  _xLineHeight*j + _cx + _x,
-			var _letterX 	= _xLineHeight*j + _cx + _x ,
-				_letterY 	= _y + (winHeight >> 1) - (_letterHeight>>1) + (_fontSize*i) /* - _letterSpacing*2 - 20*/;
-				//_randX	 	= (Math.random()*2 - 1)|0,
-				//_randY	 	= Math.random()*2|0,
-				//_randR	 	= Math.random()*16 - 8,
-				//_randF	 	= Math.random()*20-10 |0,
-				//_fontCenter	= _letterHeight / 2 | 0;
-
-			if(_doLetterRandom) modifyCanvasPoint();
-			//if (_displayOutline) _c.strokeText(_elm[j],_letterX,_letterY);
-			//else _c.fillText(_elm[j], _letterX , _letterY);
-			//console.log(_letterX,_letterY);
-			_c.fillText(_elm[j], _letterX , _letterY);
-		};
-	};
+	OFFSET_CANVAS.init({
+		type:"text",
+		// text:getRandomStrings(),
+		text:getRandomStrings(),
+//		x:fontStyle.marginX + (_rndX*loopCount) + 100,
+		x:100,
+		y:drawHeight + fontStyle.marginY,
+		style:{
+			"font-size":fontStyle.fontSize + "px",
+			"line-height":fontStyle.lineHeight,
+			"letter-spacing":fontStyle.letterSpacing+"px"
+		},
+		callback:function(){
+			drawPixels = OFFSET_CANVAS.getDrawPixels();
+			drawHeight += OFFSET_CANVAS.height + fontStyle.marginY;
+		}
+	});
 };
 
+var setRandomParam = function() {
+	maxRadius = Math.random()*1 + .1;
+	// gridUnit = Math.random()*18 | 0;
+	fontStyle.letterSpacing = Math.random()*35 | 0;
+	fontStyle.marginY = (Math.random()*60|0)+1;
+	fontStyle.fontSize = (30 + ((Math.random()*30 | 0) - 15));
+	lifeSpd = 1 + (Math.random()*4|0);
+}
+
+
 /**
- * 画像でビットマップの下地を作成
+ * ランダムな文字列を取得する
+ * @returns {String} 生成した文字列
  */
-var createCanvasText= function(){
-	var _c 		= ctx,
-		_param  = {
-			text:"CLOSE\nFORMATION",
-			//text:"CLOSE",
-			x:0,
-			y:0,
-			fontSize:100,
-			displayOutline:this.displayOutline,
-			doLetterRandom:this.doLetterRandom
-		};
+var getRandomStrings = function(){
+	// 生成する文字列の長さ
+	var _length = (Math.random()*20|0) + 5;
 	
-	//文字描画
-	horizonTexts(_param);
+	maxLife = lifeLetter*_length;
+	lifeCount= maxLife;
+
+	// 生成する文字列に含める文字セット
+	var _base 	= "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+		_cl 	= _base.length,
+		_str 	= "";
 	
-	//ピクセルデータを一時保存
-	var _imageData = _c.getImageData(0, 0, winWidth, winHeight);
-	pixels = _imageData.data;
+	for(var i=0; i < _length; i++){
+		_str += _base[Math.floor(Math.random() * _cl)];
+	}
 	
-	//描画エリアを保存
-	for (var x=0; x<winWidth; x=(x+1)|0) {
-		for (var y=0; y<winHeight; y=(y+1)|0) {
-			if(!onBlackColor(x,y)) continue;
-			drawPixels.push({
-				x:x,
-				y:y
-			});
-		};
-	};
+	return "post-truth politics";
+	return _str;
 	
-	background(bgColor);
 };
 
-/**
-	 * contextに座標移動と回転を与える
-	 */
-var modifyCanvasPoint = function(_x,_y,_r){
-	var _c = ctx;
-	_c.save();
-	_c.translate(_x,_y);
-	_c.rotate(_r* Math.PI / 180);
-	_c.translate(-_x,-(_y));
-};
 
 /**
  * 画像の塗の上にオブジェクトが居るか判断
@@ -395,10 +383,20 @@ var onBlackColor = function(x, y) {
 	var _base 	= ((y|0) * winWidth + (x|0)) * 4,
 		_p 		= pixels,
 		_color  = _p[_base + 0] + _p[_base + 1] + _p[_base + 2] + _p[_base + 3],
-		_flg 	= (_color == 255)? true : false;
+		_flg 	= (_p[_base + 3] > 0)? true : false;
+		//_flg 	= (_color == 55)? true : false;
 	return _flg;
 };
 
+var start = function () {
+	createCanvasText(function() {
+		isAnimating = true;	
+	});
+}
+
+var stop = function () {
+	isAnimating = false;
+}
 
 /**
  * パラメータ維持で表示をリセット
@@ -411,8 +409,8 @@ var clear = function(){};
  * dat.GUI用オブジェクト
  */
 var DAT = new dat.GUI();
-DAT.add(window,"maxRadius",1,10);
-DAT.add(window,"mouseRect",10,300);
+DAT.add(window,"maxRadius",.5,10);
+
 DAT.add(window,"onGrid");
 DAT.add(window,"gridUnit",2,40);
 //DAT.add(window,"strokeWidth",0.1,5);
@@ -431,10 +429,28 @@ DAT.add(window,"isStroke_02").onChange(function(){
 DAT.addColor(window,"strokeColor_02");
 DAT.add(window,"strokeWidth",.1,5);
 DAT.addColor(window,"bgColor");
-DAT.add(window,"isAnimating");
-DAT.add(window,"reset").onChange(function(){
+
+var folderTextStyle = DAT.addFolder("fontStyle");
+DAT.add(fontStyle,"fontSize",10,300);
+DAT.add(fontStyle,"letterSpacing",0,100);
+DAT.add(fontStyle,"marginX",0,200);
+DAT.add(fontStyle,"marginY",0,200);
+DAT.add(window,"lifeSpd",1,10);
+folderTextStyle.open();
+
+var folderMethods = DAT.addFolder("method");
+folderMethods.add(window,"start");
+folderMethods.add(window,"stop");
+// folderMethods.add(window,"isAnimating");
+folderMethods.add(window,"reset").onChange(function(){
 	background(bgColor);
-	
 });
+folderMethods.open();
+
+
+var folderPressed = DAT.addFolder("isPressed");
+folderPressed.add(window,"mouseRectSize",10,300);
+folderPressed.open();
+
 
 

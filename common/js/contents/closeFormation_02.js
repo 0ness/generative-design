@@ -24,7 +24,7 @@ var TwoPi 	= Math.PI * 2,
 	isAnimating = false,
 	isGap 		= true,
 	
-	isStroke 	= true,
+	isStroke 	= false,
 	isStroke_02 = true,
 	isFill 		= true,
 	
@@ -65,13 +65,10 @@ var setup = function() {
 		background(bgColor);
 		drawLoop();
 	},false);
-	canvas.addEventListener('mousemove', function(e) {},false);
-	
-	createImageBitmap();
+	// canvas.addEventListener('mousemove', function(e) {},false);
 	
 	//スタイル指定
-	noStroke();
-	noFill();
+	// noFill();
 	background(bgColor);
 };
 
@@ -88,9 +85,13 @@ var reset = function(){
  */
 var draw = function() {
 	if(!isAnimating && !isPressed) return false;
+	for (var i=0; i<20; i=(i+1)|0) baseDraw();
+};
+
+var baseDraw = function() {
 	
-	ctx.globalAlpha = 1;
-	background(bgColor);
+	// ctx.globalAlpha = 1;
+	// background(bgColor);
 	
 	// create a random positon
 	var _newX = convertIntMultiple(random(maxRadius-50,winWidth - maxRadius + 100)),
@@ -137,25 +138,56 @@ var draw = function() {
 		
 		if(_newRadius > maxRadius) _newRadius = maxRadius;
 
-			var point = {
-				x:_newX,
-				y:_newY,
-				r:_newRadius,
-				gap:_newG,
-				fillColor:fillColor,
-				strokeColor:strokeColor_02
-			};
-			points[currentCount] = point;
-			currentCount++;
+		var point = {
+			x:_newX,
+			y:_newY,
+			r:_newRadius,
+			gap:_newG,
+			fillColor:fillColor,
+			strokeColor:strokeColor_02
+		};
+		points[currentCount] = point;
+		currentCount++;
+
+		//draw them
+		drawPoint(point);
+
 	};
 	
-	//draw them
-	drawLoop();
 	
 	//visualize the random range of the new positions
-	if(isPressed == true) drawPressing();
-	
-	//if(currentCount >= maxCount) noLoop();
+	if(isPressed == true) drawPressing();	
+}
+
+var drawPoint = function(_p){
+	var _gap 	= _p.gap,
+		_x 		= _p.x,
+		_y 		= _p.y,
+		_radius = _p.r*2,
+		_fColor  = _p.fillColor,
+		_sColor  = _p.strokeColor;
+
+	if(isStroke){
+		strokeWeight(strokeWidth);
+		stroke(strokeColor)
+	}else noStroke();
+
+	if(isFill) fill(_fColor);
+	else noFill();
+
+	ctx.fillRect(_x,_y,1,1);
+
+	ellipse(_x,_y,_radius,_radius);
+
+	if(isStroke_02){
+		if(points.length === 1) return;
+		var _n = closestIndex[currentCount-1];
+		strokeWeight(strokeWidth);
+		stroke(_sColor)
+		line(_x,_y,points[_n].x,points[_n].y);
+	}else {
+		noStroke();
+	}
 };
 
 
@@ -196,6 +228,7 @@ var drawLoop = function(){
 	};
 };
 
+
 var drawPressing = function(){
 	var _rectHalf = mouseRect >> 1;
 	stroke("#ffba00");
@@ -216,52 +249,6 @@ var convertIntMultiple = function(_src){
 	var _unit = (gridUnit < maxRadius )? maxRadius : gridUnit,
 		_result = (_src / _unit | 0 ) * _unit;  // 結果 => 100
 	return _result;
-};
-
-
-
-/**
- * canvasの描画済みのエリアかどうか判定する
- * @param   {Array}   _pixel 色配列
- *　@returns {boolean} 描画済みかどうか正否値
- */
-var onDrawArea = function(_x,_y) {
-	var _pixel = ctx.getImageData(_x,_y,1,1).data;
-	//var _pixel = pixels[_x*4 + _y*4 - 1];
-	//console.log(_pixel);
-	return _pixel[3] < 10;
-};
-
-/**
- * 画像でビットマップの下地を作成
- */
-var createImageBitmap = function(){
-	var _c 		= ctx,
-		_img 	= new Image();
-
-	_img.src = "images/bird_04.png";
-	_img.onload = function(){
-		var _x = (winWidth - _img.width) >> 2,
-			_y = ((winHeight - _img.height) >> 1) - 70;
-		_c.drawImage(_img,_x,_y);
-		var imageData = _c.getImageData(0, 0, winWidth, winHeight);
-		pixels = imageData.data;
-		_c.clearRect(0, 0, winWidth, winHeight);
-	};
-};
-
-/**
- * 画像の塗の上にオブジェクトが居るか判断
- * @param   {number} x x座標
- * @param   {number} y y座標
- * @returns {boolean} 
- */
-var onBlackColor = function(x, y) {
-	var _base 	= ((y|0) * winWidth + (x|0)) * 4,
-		_p 		= pixels,
-		_color  = _p[_base + 0] + _p[_base + 1] + _p[_base + 2] + _p[_base + 3],
-		_flg 	= (_color == 255)? true : false;
-	return _flg;
 };
 
 
