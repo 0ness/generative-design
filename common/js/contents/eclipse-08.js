@@ -16,12 +16,13 @@ var canvas 	= document.getElementById("myCanvas"),
         xStep: 10,
         yStep: 15,
         noiseSpeed: 0.01,
-        radiusLevel: 0.8,
+        radiusLevel: 0.5,
         devideLevel: 4,
         r: 255,
         g: 255,
         b: 255,
-        bgColor: "#9b9b9b"
+        // bgColor: "#9b9b9b"
+        bgColor: "rgba(0,0,0,.1)"
     };
 
 
@@ -65,7 +66,7 @@ var drawPoints = function() {
 
 var drawPoint = function(_x, _y, _noise) {
     push();
-    translate(_x * _noise * 4 | 0, _y * _noise * 4 | 0);
+    translate(_x * _noise * 2 | 0, _y * _noise * 2 | 0);
     var _edgeSize = _noise * 50,
         _p = param,
         _radius = _edgeSize * _p.radiusLevel | 0,
@@ -75,7 +76,9 @@ var drawPoint = function(_x, _y, _noise) {
         _alpha = 255 * _noise * 2 | 0;
 
     fill(_r, _g, _b, _alpha);
-    ellipse(0, 0, _radius, _radius);
+    // ctx.fillRect(0, 0, _radius/2,_radius/2);
+    // ellipse(0, 0, _radius, _radius);
+    rect(0, 0, _radius, _radius);
     pop();
 };
 

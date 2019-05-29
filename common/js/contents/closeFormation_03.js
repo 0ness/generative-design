@@ -225,8 +225,8 @@ var drawPoint = function(_p){
 	}
 
 	noStroke();
-	// ellipse(_x,_y,_radius,_radius);	
-	ctx.fillRect(_x-_radius,_y-_radius,_radius*2,_radius*2);
+	ellipse(_x,_y,_radius,_radius);	
+	// ctx.fillRect(_x-_radius,_y-_radius,_radius*2,_radius*2);
 };
 
 
@@ -252,8 +252,8 @@ var drawLoop = function(){
 		else noFill();
 		
 		//ctx.fillRect(_x,_y,1,1);
-		//ellipse(_x,_y,_radius,_radius);
-		ctx.fillRect(_x-_radius,_y-_radius,_radius*2,_radius*2);
+		ellipse(_x,_y,_radius,_radius);
+		// ctx.fillRect(_x-_radius,_y-_radius,_radius*2,_radius*2);
 		
 		if(isStroke_02){
 			var _n = closestIndex[i];
@@ -338,11 +338,11 @@ var changeCanvasText = function(){
 };
 
 var setRandomParam = function() {
-	maxRadius = Math.random()*1 + .1;
+	maxRadius = Math.random()*3 + .1;
 	// gridUnit = Math.random()*18 | 0;
 	fontStyle.letterSpacing = Math.random()*35 | 0;
 	fontStyle.marginY = (Math.random()*60|0)+1;
-	fontStyle.fontSize = (30 + ((Math.random()*30 | 0) - 15));
+	fontStyle.fontSize = (30 + ((Math.random()*50 | 0) - 25));
 	lifeSpd = 1 + (Math.random()*4|0);
 }
 
